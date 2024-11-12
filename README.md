@@ -4,7 +4,7 @@
 
 # ComputeSphere NodeJS-MySQL Example
 
-This example deploys a NodeJS application that uses a MySQL datastore within.
+This example deploys a NodeJS application that uses a [MySQL datastore](https://docs.computesphere.com/docs/features/datastores/mysql) within ComputeSphere.
 
 > [!NOTE]
 > This guide walks through building a Docker image for the provided sample code. Please note that the version `v0.0.1` used in the example is for demonstration purposes only. You should replace it with a version that suits your specific setup and requirements.
@@ -15,7 +15,7 @@ This example deploys a NodeJS application that uses a MySQL datastore within.
 - [Git](https://git-scm.com/downloads)
 - [Node.js](https://nodejs.org/en/download/package-manager) (includes npm) - To build the project
 - [Docker](https://docs.docker.com/engine/install/) - To create and deploy the image
-- [MySQL](https://www.mysql.com/) - To test the database connection locally
+- [MySQL](https://www.mysql.com/) - To test the database locally
 
 ## Setup
 
