@@ -1,0 +1,83 @@
+:root {
+    --primary-color: #F5F9FCD6;
+    --secondary-color: #E5E7EB;
+    --text-color: #434C52;
+    --link-color: #355DEE;
+    --white-color: #FFFFFF;
+    --gradient-colors: rgba(178, 248, 240, 0.78) -9.55%, rgba(148, 220, 251, 0.8958) 4.42%, rgba(90, 152, 246, 0.97235) 33.3%, #073099 97.82%;
+}
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+header,
+footer {
+    padding: 20px;
+    height: 60px;
+}
+
+.text {
+    color: var(--text-color);
+}
+
+.link {
+    color: var(--link-color);
+}
+
+header {
+    background-color: var(--primary-color);
+    border-bottom: 1px solid var(--secondary-color);
+}
+
+header img {
+    margin-right: 10px;
+    height: 40px;
+    width: 40px;
+}
+
+.logo-text {
+    font-size: 30px;
+    line-height: 42px;
+    font-weight: 500;
+}
+
+.logo-gradient {
+    background: linear-gradient(0deg, var(--gradient-colors)), #000000;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body {
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Poppins', Arial, Helvetica, sans-serif;
+    background: linear-gradient(180deg, #F8FAFC 0%, #ECFEFF 100%);
+    background-size: cover;
+    font-size: 20px;
+    line-height: 34px;
+}
+
+.watermark {
+    background-image: url("assets/background-img.png");
+    background-size: cover;
+}
+
+.container {
+    flex-direction: column;
+    height: calc(100vh - 200px);
+    text-align: center;
+}
+
+footer {
+    justify-content: space-between !important;
+    background-color: var(--white-color);
+}
+
+.footer-links {
+    gap: 10px;
+}
