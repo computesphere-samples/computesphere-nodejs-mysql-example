@@ -1,5 +1,5 @@
 <p align="right">
-    <a href="https://computesphere.com/"><img src="public/assets/logo.svg" width="50px" /></a>
+    <a href="https://computesphere.com/"><img src="https://pepublicassets.blob.core.windows.net/public-assets/computesphere-favicon.svg" width="50px" /></a>
 </p>
 
 # ComputeSphere NodeJS-MySQL Example
@@ -136,7 +136,7 @@ To get all users, invoke the `localhost:3000/users` endpoint with a `GET` reques
 See our guide on how to deploy this project to ComputeSphere.
 
 <!-- Check if this is the right link to the dashboard -->
-<a href="https://console.computesphere.com"> <img src="https://cdn.sanity.io/images/5jct4wv7/production/a3a823db7833f9274fc723b1223084b51c7ed160-1103x160.png" width="350px" alt="ComputeSphere Logo"> </a>
+<a href="https://console.computesphere.com"> <img src="https://pepublicassets.blob.core.windows.net/public-assets/computesphere-full-logo.png" width="350px" alt="ComputeSphere Logo"> </a>
 
 ---
 [Explore ComputeSphere Documentation](https://docs.computesphere.com)

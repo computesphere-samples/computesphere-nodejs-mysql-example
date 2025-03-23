@@ -1,0 +1,52 @@
+name: Update README
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 1 1 *"
+
+jobs:
+  update-readme:
+    name: Update README
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub App Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.COMPUTESPHERE_SAMPLES_BOT_GITHUB_APP_APP_ID }}
+          private-key: ${{ secrets.COMPUTESPHERE_SAMPLES_BOT_GITHUB_APP_CLIENT_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Update year in README
+        run: |
+          # Flags:
+          # -r                                         - flag is for extended regex
+          # -i                                         - flag is for in-place editing, meaning the file will be modified
+          # Expression:
+          # s/                                         - search and replace
+          # Search:
+          # [0-9]{4}                                   - match any 4 digits, year in this case
+          # ( ComputeSphere LLC. All Rights Reserved.) - match the string, so we update only year in the license. parenthesis are used to group the string
+          # Replacement:
+          # ${CURRENT_YEAR}                            - current year
+          # \1                                         - backreference to the string in the parenthesis
+          # Flags:
+          # g                                          - global flag, meaning all occurrences will be replaced
+          # i                                          - case insensitive
+          # README.md                                  - file to be modified
+
+          CURRENT_YEAR=$(date +'%Y')
+          sed -r -i "s/[0-9]{4}( ComputeSphere LLC. All Rights Reserved.)/${CURRENT_YEAR}\1/gi" README.md
+
+      - name: Commit and Push
+        uses: actions-js/push@v1.5
+        with:
+          github_token: ${{ steps.app-token.outputs.token }}
+          message: "Update year in README"
+          force: true
+          author_name: computesphere-samples-bot
+          author_email: computesphere-samples-bot@users.noreply.github.com
