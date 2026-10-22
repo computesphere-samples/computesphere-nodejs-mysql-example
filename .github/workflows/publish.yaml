@@ -1,8 +1,10 @@
 name: Publish image
 
 # Builds the image for linux/amd64 and pushes it to quay.io/computesphere/<this repo>.
-# A push to main publishes :main and :latest. A version tag (v1.2.3) publishes that tag;
-# published version tags are never rebuilt, so the job refuses to overwrite one.
+# A push to main publishes :main, :latest and :sha-<commit>. The sha tag never moves, so a
+# digest pinned from it stays pullable (Quay won't serve an untagged manifest). A version tag
+# (v1.2.3) publishes that tag; published version tags are never rebuilt, so the job refuses
+# to overwrite one.
 # Pull requests only build it.
 on:
   push:
@@ -34,7 +36,7 @@ jobs:
           if [ "$GITHUB_REF_TYPE" = tag ]; then
             echo "tags=$REPO:$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
           else
-            echo "tags=$REPO:main,$REPO:latest" >> "$GITHUB_OUTPUT"
+            echo "tags=$REPO:main,$REPO:latest,$REPO:sha-${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
           fi
       - name: Log in to Quay
         if: env.PUSH == 'true'
