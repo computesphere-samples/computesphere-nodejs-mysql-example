@@ -46,8 +46,14 @@ jobs:
       - name: Refuse to overwrite a published version tag
         if: env.PUSH == 'true' && github.ref_type == 'tag'
         run: |
-          if docker buildx imagetools inspect "$REPO:$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "::error::$REPO:$GITHUB_REF_NAME already exists; published tags are immutable. Bump the version."
+          # Only "not found" means unpublished; any other error (network, auth) fails the job.
+          ref="$REPO:$GITHUB_REF_NAME"
+          if out=$(docker buildx imagetools inspect "$ref" 2>&1); then
+            echo "::error::$ref already exists; published tags are immutable. Bump the version."
+            exit 1
+          fi
+          if ! printf '%s\n' "$out" | grep -qiE "$ref: not found|manifest unknown|404 Not Found"; then
+            echo "::error::Could not check whether $ref exists: $out"
             exit 1
           fi
       - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
