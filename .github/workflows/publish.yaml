@@ -2,9 +2,9 @@ name: Publish image
 
 # Builds the image for linux/amd64 and pushes it to quay.io/computesphere/<this repo>.
 # A push to main publishes :main, :latest and :sha-<commit>. The sha tag never moves, so a
-# digest pinned from it stays pullable (Quay won't serve an untagged manifest). A version tag
-# (v1.2.3) publishes that tag; published version tags are never rebuilt, so the job refuses
-# to overwrite one.
+# digest pinned from it stays pullable (Quay won't serve an untagged manifest); a re-run of a
+# commit that's already published builds only. A version tag (v1.2.3) publishes that tag;
+# published version tags are never rebuilt, so the job refuses to overwrite one.
 # Pull requests only build it.
 on:
   push:
@@ -30,14 +30,6 @@ jobs:
         with:
           persist-credentials: false
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
-      - name: Choose tags
-        id: tags
-        run: |
-          if [ "$GITHUB_REF_TYPE" = tag ]; then
-            echo "tags=$REPO:$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
-          else
-            echo "tags=$REPO:main,$REPO:latest,$REPO:sha-${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
-          fi
       - name: Log in to Quay
         if: env.PUSH == 'true'
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
@@ -45,23 +37,41 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_ROBOT_USERNAME }}
           password: ${{ secrets.QUAY_ROBOT_TOKEN }}
-      - name: Refuse to overwrite a published version tag
-        if: env.PUSH == 'true' && github.ref_type == 'tag'
+      - name: Choose what to publish
+        id: plan
         run: |
-          # Only "not found" means unpublished; any other error (network, auth) fails the job.
-          ref="$REPO:$GITHUB_REF_NAME"
-          if out=$(docker buildx imagetools inspect "$ref" 2>&1); then
-            echo "::error::$ref already exists; published tags are immutable. Bump the version."
+          # exists <ref>: 0 if published, 1 if not found; any other error (network, auth) fails the job.
+          exists() {
+            if out=$(docker buildx imagetools inspect "$1" 2>&1); then return 0; fi
+            if grep -qiE "$1: not found|manifest unknown|404 Not Found" <<<"$out"; then return 1; fi
+            echo "::error::Could not check whether $1 exists: $out"
             exit 1
+          }
+          push=$PUSH
+          if [ "$PUSH" != true ]; then
+            tags="$REPO:ci"
+          elif [ "$GITHUB_REF_TYPE" = tag ]; then
+            tags="$REPO:$GITHUB_REF_NAME"
+            if exists "$tags"; then
+              echo "::error::$tags already exists; published tags are immutable. Bump the version."
+              exit 1
+            fi
+          else
+            # sha-<commit> never moves. If this commit is already published (a re-run), publish
+            # nothing: a rebuild would untag the pinned digest and could move :latest backwards.
+            sha="$REPO:sha-${GITHUB_SHA::12}"
+            tags="$REPO:main,$REPO:latest,$sha"
+            if exists "$sha"; then
+              echo "::notice::$sha is already published; building only."
+              push=false
+            fi
           fi
-          if ! printf '%s\n' "$out" | grep -qiE "$ref: not found|manifest unknown|404 Not Found"; then
-            echo "::error::Could not check whether $ref exists: $out"
-            exit 1
-          fi
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+          echo "push=$push" >> "$GITHUB_OUTPUT"
       - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
           context: .
           platforms: linux/amd64
-          push: ${{ env.PUSH == 'true' }}
-          tags: ${{ steps.tags.outputs.tags }}
+          push: ${{ steps.plan.outputs.push == 'true' }}
+          tags: ${{ steps.plan.outputs.tags }}
           provenance: false
